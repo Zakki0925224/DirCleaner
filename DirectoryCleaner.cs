@@ -55,7 +55,7 @@ namespace DirCleaner
 
             foreach (var dirPath in this.EmptyDirPathList)
             {
-                if (GetDeletableParentDirectoryPath(dirPath))
+                if (IsDeletableParentDirectoryPath(dirPath))
                 {
                     var parentDirPath = Directory.GetParent(dirPath).FullName;
 
@@ -68,12 +68,7 @@ namespace DirCleaner
                 }
             }
 
-            deletingPlanDirPath.ForEach(path =>
-            {
-                Console.WriteLine($"You don't need to delete \"{path}\".");
-                this.EmptyDirPathList.Remove(path);
-            });
-
+            deletingPlanDirPath.ForEach(path => this.EmptyDirPathList.Remove(path));
             addingPlanDirPath.ForEach(path => this.EmptyDirPathList.Add(path));
 
             if (deletingPlanDirPath.Count > 0 && addingPlanDirPath.Count > 0)
@@ -82,14 +77,15 @@ namespace DirCleaner
             }
         }
 
-        private bool GetDeletableParentDirectoryPath(string dirPath)
+        private bool IsDeletableParentDirectoryPath(string dirPath)
         {
             var parentDirPath = Directory.GetParent(dirPath).FullName;
             var childrenDirPath = Directory.GetDirectories(parentDirPath).ToList();
-            var result = false;
-            childrenDirPath.ForEach(path => result = this.EmptyDirPathList.Contains(path));
+            var childrenFilePath = Directory.GetFiles(parentDirPath).ToList();
+            var existChecks = new List<bool>();
+            childrenDirPath.ForEach(path => existChecks.Add(this.EmptyDirPathList.Contains(path)));
 
-            return result;
+            return existChecks.All(exist => exist == true);
         }
 
         public void Clean()

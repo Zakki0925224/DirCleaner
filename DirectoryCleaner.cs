@@ -55,7 +55,7 @@ namespace DirCleaner
 
             foreach (var dirPath in this.EmptyDirPathList)
             {
-                if(GetDeletableParentDirectoryPath(dirPath))
+                if (GetDeletableParentDirectoryPath(dirPath))
                 {
                     var parentDirPath = Directory.GetParent(dirPath).FullName;
 
@@ -68,20 +68,26 @@ namespace DirCleaner
                 }
             }
 
-            deletingPlanDirPath.ForEach(path => this.EmptyDirPathList.Remove(path));
+            deletingPlanDirPath.ForEach(path =>
+            {
+                Console.WriteLine($"You don't need to delete \"{path}\".");
+                this.EmptyDirPathList.Remove(path);
+            });
+
             addingPlanDirPath.ForEach(path => this.EmptyDirPathList.Add(path));
+
+            if (deletingPlanDirPath.Count > 0 && addingPlanDirPath.Count > 0)
+            {
+                ListOptimization();
+            }
         }
 
         private bool GetDeletableParentDirectoryPath(string dirPath)
         {
             var parentDirPath = Directory.GetParent(dirPath).FullName;
-            var childrenDirPath = Directory.GetDirectories(parentDirPath);
+            var childrenDirPath = Directory.GetDirectories(parentDirPath).ToList();
             var result = false;
-
-            foreach (var path in childrenDirPath)
-            {
-                result = this.EmptyDirPathList.Contains(path);
-            }
+            childrenDirPath.ForEach(path => result = this.EmptyDirPathList.Contains(path));
 
             return result;
         }
@@ -96,7 +102,7 @@ namespace DirCleaner
                 return;
             }
 
-            this.EmptyDirPathList.ForEach(path => Console.WriteLine(path));
+            this.EmptyDirPathList.ForEach(path => Console.WriteLine($"You need to delete the upper directory \"{path}\"."));
             Console.WriteLine($"Found {this.EmptyDirCount} -> {this.EmptyDirPathList.Count} empty directories.");
             Console.Write("Do you want to delete them? (y/n)>");
             var input = Console.ReadLine();
